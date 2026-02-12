@@ -4,228 +4,219 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# 🔥 RED THEME + INTERACTIVE TEXT BACKGROUND ✨
-# 🔥 RED THEME + STREAMLIT COMPATIBLE TEXT REVEAL ✨
+# 🔥 RED THEME + FIXED BLUR TEXT + GLOWING COLUMNS ✨
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Courier+Prime:wght@400;700&display=swap');
     
-    /* STREAMLIT TEXT REVEAL BACKGROUND */
-    .stApp {
-        background: #0a0a0a !important;
-        position: relative !important;
-        overflow-x: hidden !important;
-    }
-    
-    /* TEXT PARTICLES CONTAINER */
-    .text-reveal-bg {
+    /* FIXED BLUR TEXT BACKGROUND - 100% STREAMLIT SAFE */
+    .stApp::before {
+        content: 'AYURVEDA VATA PITTA KAPHA TURMERIC GINGER ASHWAGANDHA YOGA PRANA HEALING HERBS DOSHAS BALANCE TRIPHALA BRAHMI SHATAVARI NATURAL REMEDIES HOLISTIC MIND BODY SPIRIT DETOX CLEANSE WELLNESS SATVIK';
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
         width: 100vw !important;
-        height: 200vh !important;
+        height: 300vh !important;
+        color: rgba(220, 38, 38, 0.08) !important;
+        font-family: 'Courier Prime', monospace !important;
+        font-size: 22px !important;
+        font-weight: 700 !important;
         pointer-events: none !important;
         z-index: 1 !important;
-        font-family: 'Courier Prime', monospace !important;
-        overflow: hidden !important;
-    }
-    
-    /* INDIVIDUAL TEXT PARTICLES */
-    .text-particle {
-        position: absolute !important;
-        color: rgba(220, 38, 38, 0.03) !important;
-        font-size: 14px !important;
-        font-weight: 700 !important;
+        line-height: 1.2 !important;
+        text-shadow: 0 0 20px rgba(220, 38, 38, 0.3) !important;
+        filter: blur(1.5px) !important;
+        animation: scrollGlow 60s linear infinite !important;
         white-space: nowrap !important;
-        animation: float 20s infinite linear !important;
-        transition: all 0.3s ease !important;
-        text-shadow: 0 0 10px rgba(220, 38, 38, 0.1) !important;
     }
     
-    .text-particle:hover,
-    .text-particle.revealed {
-        color: rgba(220, 38, 38, 1) !important;
-        text-shadow: 0 0 30px rgba(220, 38, 38, 0.8) !important;
-        transform: scale(1.2) !important;
-        z-index: 10 !important;
-        filter: blur(0px) !important;
+    @keyframes scrollGlow {
+        0% { 
+            transform: translateX(100vw) rotateX(0deg); 
+            opacity: 0.3; 
+            filter: blur(1.5px);
+        }
+        50% { 
+            opacity: 0.6; 
+            filter: blur(1px);
+            text-shadow: 0 0 40px rgba(220, 38, 38, 0.6);
+        }
+        100% { 
+            transform: translateX(-50%) rotateX(10deg); 
+            opacity: 0.2; 
+            filter: blur(2px);
+        }
     }
     
-    @keyframes float {
-        0% { transform: translateY(100vh) rotate(0deg); opacity: 0.1; }
-        10% { opacity: 0.3; }
-        90% { opacity: 0.3; }
-        100% { transform: translateY(-100px) rotate(360deg); opacity: 0.05; }
-    }
-    
-    /* RED GRADIENT OVERLAY - PRESERVES YOUR DESIGN */
+    /* RED GRADIENT OVERLAY */
     .main {
-        position: relative !important;
-        z-index: 10 !important;
-        background: linear-gradient(135deg, rgba(220, 38, 38, 0.85) 0%, rgba(185, 28, 28, 0.9) 50%, rgba(153, 27, 27, 0.95) 100%) !important;
+        background: linear-gradient(135deg, rgba(220, 38, 38, 0.88) 0%, rgba(185, 28, 28, 0.92) 50%, rgba(153, 27, 27, 0.95) 100%) !important;
         padding: 2rem !important;
         font-family: 'Poppins', sans-serif !important;
-        backdrop-filter: blur(1px) !important;
+        position: relative !important;
+        z-index: 10 !important;
+        backdrop-filter: blur(2px) !important;
     }
     
-    /* ALL YOUR ORIGINAL STYLES BELOW (UNCHANGED) */
-    .glow-card {
-        background: rgba(255, 255, 255, 0.95) !important;
-        backdrop-filter: blur(20px) !important;
-        border-radius: 25px !important;
-        padding: 2rem !important;
-        margin: 1rem 0 !important;
+    /* GLOWING COLUMNS */
+    [data-testid="column"]:not(:last-child)::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: linear-gradient(45deg, rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.2)) !important;
+        border-radius: 20px !important;
         box-shadow: 
-            0 20px 40px rgba(220, 38, 38, 0.3),
-            0 0 0 1px rgba(255, 255, 255, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            0 0 30px rgba(220, 38, 38, 0.4),
+            inset 0 0 20px rgba(255, 255, 255, 0.1) !important;
+        animation: columnPulse 4s ease-in-out infinite !important;
+        z-index: -1 !important;
+    }
+    
+    @keyframes columnPulse {
+        0%, 100% { box-shadow: 0 0 30px rgba(220, 38, 38, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.1); }
+        50% { box-shadow: 0 0 50px rgba(220, 38, 38, 0.7), inset 0 0 30px rgba(255, 255, 255, 0.2); }
+    }
+    
+    /* ENHANCED GLOWING RED CARDS */
+    .glow-card {
+        background: rgba(255, 255, 255, 0.97) !important;
+        backdrop-filter: blur(25px) !important;
+        border-radius: 25px !important;
+        padding: 2.5rem !important;
+        margin: 1.5rem 0 !important;
+        box-shadow: 
+            0 25px 50px rgba(220, 38, 38, 0.35),
+            0 0 0 1px rgba(255, 255, 255, 0.25),
+            inset 0 1px 0 rgba(255, 255, 255, 0.6),
+            0 0 40px rgba(220, 38, 38, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.35) !important;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
         position: relative !important;
         overflow: hidden !important;
+        animation: cardFloat 6s ease-in-out infinite !important;
     }
     
     .glow-card::before {
         content: '' !important;
         position: absolute !important;
-        top: 0 !important;
-        left: -100% !important;
-        width: 100% !important;
-        height: 100% !important;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent) !important;
-        transition: left 0.7s !important;
+        top: -50% !important;
+        left: -50% !important;
+        width: 200% !important;
+        height: 200% !important;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%) !important;
+        opacity: 0 !important;
+        transition: opacity 0.6s !important;
     }
     
     .glow-card:hover::before {
-        left: 100% !important;
+        opacity: 1 !important;
+        animation: shimmer 1.5s infinite !important;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+    
+    @keyframes cardFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-5px); }
     }
     
     .glow-card:hover {
-        transform: translateY(-8px) !important;
+        transform: translateY(-12px) scale(1.02) !important;
         box-shadow: 
-            0 30px 60px rgba(220, 38, 38, 0.4),
-            0 0 0 1px rgba(255, 255, 255, 0.3) !important;
+            0 40px 80px rgba(220, 38, 38, 0.5),
+            0 0 0 1px rgba(255, 255, 255, 0.4),
+            0 0 60px rgba(220, 38, 38, 0.4) !important;
     }
     
-    .red-glow-btn {
+    /* SUPER GLOWING BUTTONS */
+    .stButton > button {
         background: linear-gradient(45deg, #dc2626, #ef4444, #f87171) !important;
         border: none !important;
-        border-radius: 20px !important;
-        padding: 14px 28px !important;
+        border-radius: 25px !important;
+        padding: 16px 32px !important;
         color: white !important;
-        font-weight: 600 !important;
-        font-size: 15px !important;
+        font-weight: 700 !important;
+        font-size: 16px !important;
         cursor: pointer !important;
-        box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4) !important;
-        transition: all 0.3s ease !important;
+        box-shadow: 
+            0 12px 35px rgba(220, 38, 38, 0.5),
+            0 0 30px rgba(220, 38, 38, 0.3) !important;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
         position: relative !important;
         overflow: hidden !important;
+        animation: buttonPulse 3s infinite !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
     }
     
-    .red-glow-btn:hover {
-        transform: translateY(-4px) scale(1.05) !important;
-        box-shadow: 0 15px 35px rgba(220, 38, 38, 0.6) !important;
+    .stButton > button:hover {
+        transform: translateY(-6px) scale(1.08) !important;
+        box-shadow: 
+            0 25px 50px rgba(220, 38, 38, 0.7),
+            0 0 50px rgba(220, 38, 38, 0.5) !important;
+        background: linear-gradient(45deg, #ef4444, #f87171, #dc2626) !important;
     }
     
-    .clear-red {
-        background: linear-gradient(45deg, #b91c1c, #dc2626) !important;
-        box-shadow: 0 8px 25px rgba(185, 28, 28, 0.5) !important;
+    @keyframes buttonPulse {
+        0%, 100% { box-shadow: 0 12px 35px rgba(220, 38, 38, 0.5), 0 0 30px rgba(220, 38, 38, 0.3); }
+        50% { box-shadow: 0 12px 35px rgba(220, 38, 38, 0.7), 0 0 40px rgba(220, 38, 38, 0.5); }
     }
     
+    /* GLOWING TITLE */
+    h1 {
+        background: linear-gradient(45deg, #ffffff, #fee2e2, #fecaca) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        font-weight: 800 !important;
+        text-shadow: 0 0 40px rgba(255,255,255,0.6) !important;
+        animation: titleGlow 3s ease-in-out infinite alternate !important;
+    }
+    
+    @keyframes titleGlow {
+        0% { filter: drop-shadow(0 0 20px rgba(220, 38, 38, 0.5)); }
+        100% { filter: drop-shadow(0 0 40px rgba(220, 38, 38, 0.8)); }
+    }
+    
+    /* FOOTER ENHANCEMENTS */
+    .footer-glow {
+        background: linear-gradient(135deg, rgba(220, 38, 38, 0.95), rgba(185, 28, 28, 0.9)) !important;
+        backdrop-filter: blur(30px) !important;
+        border-radius: 25px !important;
+        padding: 2.5rem !important;
+        text-align: center !important;
+        box-shadow: 
+            0 30px 60px rgba(220, 38, 38, 0.5),
+            0 0 50px rgba(220, 38, 38, 0.3) !important;
+        border: 1px solid rgba(255,255,255,0.3) !important;
+        animation: footerFloat 5s ease-in-out infinite !important;
+    }
+    
+    @keyframes footerFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-3px); }
+    }
+    
+    /* TEXT STYLES */
     .glow-card h3 {
         color: #1f2937 !important;
-        font-weight: 700 !important;
-        margin-bottom: 1rem !important;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+        font-weight: 800 !important;
+        margin-bottom: 1.2rem !important;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
     }
     
     .glow-card p, .glow-card li {
         color: #374151 !important;
-        line-height: 1.6 !important;
-    }
-    
-    h1 {
-        background: linear-gradient(45deg, #ffffff, #fee2e2) !important;
-        -webkit-background-clip: text !important;
-        -webkit-text-fill-color: transparent !important;
-        background-clip: text !important;
-        font-weight: 700 !important;
-        text-shadow: 0 0 30px rgba(255,255,255,0.5) !important;
-    }
-    
-    .footer-glow {
-        background: rgba(220, 38, 38, 0.9) !important;
-        backdrop-filter: blur(20px) !important;
-        border-radius: 20px !important;
-        padding: 2rem !important;
-        text-align: center !important;
-        box-shadow: 0 20px 40px rgba(220, 38, 38, 0.4) !important;
-        border: 1px solid rgba(255,255,255,0.2) !important;
-    }
-    
-    .footer-glow a {
-        color: #fef3c7 !important;
-        text-decoration: none !important;
-        font-weight: 600 !important;
-    }
-    
-    .footer-glow a:hover {
-        color: white !important;
-        text-shadow: 0 0 10px rgba(254, 243, 199, 0.8) !important;
+        line-height: 1.7 !important;
     }
 </style>
-
-<!-- TEXT REVEAL BACKGROUND CONTAINER -->
-<div class="text-reveal-bg" id="textRevealBg"></div>
-
-<script>
-// STREAMLIT COMPATIBLE TEXT GENERATOR
-document.addEventListener('DOMContentLoaded', function() {
-    const container = document.getElementById('textRevealBg');
-    const ayurvedicTexts = [
-        "AYURVEDA • DOSHAS • VATA PITTA KAPHA",
-        "TURMERIC • GINGER • ASHWAGANDHA",
-        "YOGA • PRANA • HEALING • HERBS",
-        "NATURAL REMEDIES • BALANCE • WELLNESS",
-        "TRIPHALA • BRAHMI • SHATAVARI",
-        "HOLISTIC • MIND BODY SPIRIT"
-    ];
-    
-    // Create 50 floating text particles
-    for(let i = 0; i < 50; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'text-particle';
-        particle.textContent = ayurvedicTexts[Math.floor(Math.random() * ayurvedicTexts.length)];
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.animationDelay = Math.random() * 20 + 's';
-        particle.style.animationDuration = (15 + Math.random() * 10) + 's';
-        particle.style.fontSize = (12 + Math.random() * 6) + 'px';
-        container.appendChild(particle);
-    }
-    
-    // Mouse reveal effect (Streamlit compatible)
-    document.addEventListener('mousemove', function(e) {
-        const particles = document.querySelectorAll('.text-particle');
-        particles.forEach(particle => {
-            const rect = particle.getBoundingClientRect();
-            const particleX = rect.left + rect.width / 2;
-            const particleY = rect.top + rect.height / 2;
-            const distance = Math.sqrt(
-                Math.pow(e.clientX - particleX, 2) + 
-                Math.pow(e.clientY - particleY, 2)
-            );
-            
-            if(distance < 150) {
-                particle.classList.add('revealed');
-            } else {
-                particle.classList.remove('revealed');
-            }
-        });
-    });
-});
-</script>
 """, unsafe_allow_html=True)
-
 
 # Load data
 @st.cache_data
@@ -249,11 +240,12 @@ if 'user_input' not in st.session_state:
 
 # GLOWING HEADER ✨
 st.markdown("""
-<div style='text-align: center; padding: 3rem 2rem; background: rgba(255,255,255,0.1); 
-            border-radius: 30px; backdrop-filter: blur(20px); margin: 0 auto 3rem; max-width: 900px;
-            box-shadow: 0 25px 50px rgba(220, 38, 38, 0.3); border: 1px solid rgba(255,255,255,0.2);'>
-    <h1 style='font-size: 4rem; margin: 0 0 1rem 0;'>🪔 AyurVaidya Assist</h1>
-    <p style='color: rgba(255,255,255,0.95); font-size: 1.4rem; margin: 0; font-weight: 300;'>✨ AI-Powered Ayurvedic Healing ✨</p>
+<div style='text-align: center; padding: 3.5rem 2rem; background: rgba(255,255,255,0.12); 
+            border-radius: 35px; backdrop-filter: blur(25px); margin: 0 auto 3rem; max-width: 950px;
+            box-shadow: 0 30px 70px rgba(220, 38, 38, 0.4), 0 0 60px rgba(220, 38, 38, 0.2); 
+            border: 1px solid rgba(255,255,255,0.25); position: relative; overflow: hidden;'>
+    <h1 style='font-size: 4.2rem; margin: 0 0 1.2rem 0;'>🪔 AyurVaidya Assist</h1>
+    <p style='color: rgba(255,255,255,0.98); font-size: 1.5rem; margin: 0; font-weight: 400;'>✨ AI-Powered Ayurvedic Healing ✨</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -299,7 +291,7 @@ if seen_doctor or emergency:
     st.stop()
 
 # Symptom Input ✨
-st.markdown('<h2 style="color: #1f2937; text-align: center; margin: 2rem 0;">📝 Your Symptoms</h2>', unsafe_allow_html=True)
+st.markdown('<h2 style="color: #1f2937; text-align: center; margin: 2.5rem 0; text-shadow: 0 4px 12px rgba(0,0,0,0.3);">📝 Your Symptoms</h2>', unsafe_allow_html=True)
 
 col1, col2 = st.columns([3,1])
 with col1:
@@ -325,7 +317,7 @@ selected_symptoms = st.session_state.selected_symptoms.copy()
 if user_input:
     matching = symptoms_df[symptoms_df['symptom'].str.contains(user_input.lower(), case=False, na=False)]
     if not matching.empty:
-        st.markdown('<p style="font-weight:600; color:#1f2937; margin-top:1rem;">🔍 **Suggested Symptoms:**</p>', unsafe_allow_html=True)
+        st.markdown('<p style="font-weight:700; color:#1f2937; margin-top:1.5rem;">🔍 **Suggested Symptoms:**</p>', unsafe_allow_html=True)
         cols = st.columns(4)
         for i, symptom in enumerate(matching['symptom'].head(12)):
             if cols[i%4].button(symptom, key=f"suggest_{i}", use_container_width=True):
@@ -335,7 +327,7 @@ if user_input:
                     st.rerun()
 
 # Common symptoms
-st.markdown('<p style="font-weight:600; color:#1f2937;">🔥 **Quick Common Symptoms:**</p>', unsafe_allow_html=True)
+st.markdown('<p style="font-weight:700; color:#1f2937;">🔥 **Quick Common Symptoms:**</p>', unsafe_allow_html=True)
 cols = st.columns(4)
 common = ['Cough', 'Fever', 'Fatigue', 'Headache', 'Joint pain', 'Sore throat']
 for i, sym in enumerate(common):
@@ -393,15 +385,15 @@ for i, idx in enumerate(top_matches):
 # OWNER FOOTER ✨
 st.markdown("""
 <div class="footer-glow">
-    <h3 style='color: white; margin-bottom: 1rem;'>✨ AyurVaidya Assist ✨</h3>
-    <p style='color: #fef3c7; font-size: 1.1rem;'>
+    <h3 style='color: white; margin-bottom: 1.2rem;'>✨ AyurVaidya Assist ✨</h3>
+    <p style='color: #fef3c7; font-size: 1.2rem;'>
         <strong>📊 446 Diseases | 🤖 AI Powered | 🥄 Authentic Kitchen Remedies</strong>
     </p>
     <p style='color: #fef3c7;'>
         👨‍💻 <strong>Created by:</strong> <a href='mailto:yadavhemant1002@gmail.com'>Hemant Yadav</a> 
         | 📧 <a href='mailto:yadavhemant1002@gmail.com.com'>yadavhemant1002@gmail.com</a>
     </p>
-    <p style='color: rgba(255,255,255,0.8); font-size: 0.9rem;'>
+    <p style='color: rgba(255,255,255,0.85); font-size: 1rem;'>
         ⚠️ <em>Not medical advice - consult your doctor</em>
     </p>
 </div>
