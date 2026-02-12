@@ -5,29 +5,60 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # 🔥 RED THEME + INTERACTIVE TEXT BACKGROUND ✨
+# 🔥 RED THEME + STREAMLIT COMPATIBLE TEXT REVEAL ✨
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Courier+Prime:wght@400;700&display=swap');
     
-    /* INTERACTIVE TEXT BACKGROUND - FULLSCREEN */
-    .stAppViewContainer {
-        position: relative !important;
+    /* STREAMLIT TEXT REVEAL BACKGROUND */
+    .stApp {
         background: #0a0a0a !important;
-        overflow: hidden !important;
+        position: relative !important;
+        overflow-x: hidden !important;
     }
     
-    .text-bg-canvas {
+    /* TEXT PARTICLES CONTAINER */
+    .text-reveal-bg {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
         width: 100vw !important;
-        height: 100vh !important;
+        height: 200vh !important;
         pointer-events: none !important;
         z-index: 1 !important;
         font-family: 'Courier Prime', monospace !important;
+        overflow: hidden !important;
     }
     
-    /* RED GRADIENT OVERLAY - PRESERVES ORIGINAL DESIGN */
+    /* INDIVIDUAL TEXT PARTICLES */
+    .text-particle {
+        position: absolute !important;
+        color: rgba(220, 38, 38, 0.03) !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        white-space: nowrap !important;
+        animation: float 20s infinite linear !important;
+        transition: all 0.3s ease !important;
+        text-shadow: 0 0 10px rgba(220, 38, 38, 0.1) !important;
+    }
+    
+    .text-particle:hover,
+    .text-particle.revealed {
+        color: rgba(220, 38, 38, 1) !important;
+        text-shadow: 0 0 30px rgba(220, 38, 38, 0.8) !important;
+        transform: scale(1.2) !important;
+        z-index: 10 !important;
+        filter: blur(0px) !important;
+    }
+    
+    @keyframes float {
+        0% { transform: translateY(100vh) rotate(0deg); opacity: 0.1; }
+        10% { opacity: 0.3; }
+        90% { opacity: 0.3; }
+        100% { transform: translateY(-100px) rotate(360deg); opacity: 0.05; }
+    }
+    
+    /* RED GRADIENT OVERLAY - PRESERVES YOUR DESIGN */
     .main {
         position: relative !important;
         z-index: 10 !important;
@@ -37,7 +68,7 @@ st.markdown("""
         backdrop-filter: blur(1px) !important;
     }
     
-    /* GLOWING RED CARDS - FIXED WHITE TEXT */
+    /* ALL YOUR ORIGINAL STYLES BELOW (UNCHANGED) */
     .glow-card {
         background: rgba(255, 255, 255, 0.95) !important;
         backdrop-filter: blur(20px) !important;
@@ -76,7 +107,6 @@ st.markdown("""
             0 0 0 1px rgba(255, 255, 255, 0.3) !important;
     }
     
-    /* RED GLOWING BUTTONS */
     .red-glow-btn {
         background: linear-gradient(45deg, #dc2626, #ef4444, #f87171) !important;
         border: none !important;
@@ -97,13 +127,11 @@ st.markdown("""
         box-shadow: 0 15px 35px rgba(220, 38, 38, 0.6) !important;
     }
     
-    /* CLEAR BUTTON */
     .clear-red {
         background: linear-gradient(45deg, #b91c1c, #dc2626) !important;
         box-shadow: 0 8px 25px rgba(185, 28, 28, 0.5) !important;
     }
     
-    /* WHITE TEXT HEADERS */
     .glow-card h3 {
         color: #1f2937 !important;
         font-weight: 700 !important;
@@ -116,7 +144,6 @@ st.markdown("""
         line-height: 1.6 !important;
     }
     
-    /* GLOWING TITLE */
     h1 {
         background: linear-gradient(45deg, #ffffff, #fee2e2) !important;
         -webkit-background-clip: text !important;
@@ -126,7 +153,6 @@ st.markdown("""
         text-shadow: 0 0 30px rgba(255,255,255,0.5) !important;
     }
     
-    /* FOOTER */
     .footer-glow {
         background: rgba(220, 38, 38, 0.9) !important;
         backdrop-filter: blur(20px) !important;
@@ -149,112 +175,57 @@ st.markdown("""
     }
 </style>
 
-<!-- INTERACTIVE TEXT BACKGROUND CANVAS -->
-<div class="text-bg-canvas" id="textBgCanvas"></div>
+<!-- TEXT REVEAL BACKGROUND CONTAINER -->
+<div class="text-reveal-bg" id="textRevealBg"></div>
 
 <script>
-// ✨ MAGIC INTERACTIVE TEXT BACKGROUND ✨
-(function() {
-    const canvas = document.getElementById('textBgCanvas');
-    const ctx = canvas.getContext('2d');
-    
-    // Set canvas size
-    function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    
-    // Lorem ipsum text chunks for ayurvedic theme
-    const texts = [
-        "AYURVEDA • HEALING • HERBS • DOSHAS • VATA • PITTA • KAPHA",
-        "PRANA • CHI • ENERGY • BALANCE • HARBAL • NATURAL • REMEDIES",
-        "YOGA • MEDITATION • DETOX • CLEANSE • WELLNESS • HOLISTIC",
-        "TURMERIC • GINGER • ASHWAGANDHA • TRIPHALA • BRAHMI • SHATAVARI",
-        "SATVIK • FOOD • MIND • BODY • SPIRIT • ANCIENT • WISDOM"
+// STREAMLIT COMPATIBLE TEXT GENERATOR
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('textRevealBg');
+    const ayurvedicTexts = [
+        "AYURVEDA • DOSHAS • VATA PITTA KAPHA",
+        "TURMERIC • GINGER • ASHWAGANDHA",
+        "YOGA • PRANA • HEALING • HERBS",
+        "NATURAL REMEDIES • BALANCE • WELLNESS",
+        "TRIPHALA • BRAHMI • SHATAVARI",
+        "HOLISTIC • MIND BODY SPIRIT"
     ];
     
-    // Generate random text positions
-    const textParticles = [];
-    const density = 0.3; // particles per 100px
-    
-    for(let i = 0; i < canvas.width * canvas.height * density / 10000; i++) {
-        textParticles.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            vx: (Math.random() - 0.5) * 0.5,
-            vy: (Math.random() - 0.5) * 0.5,
-            text: texts[Math.floor(Math.random() * texts.length)],
-            alpha: Math.random() * 0.3,
-            size: 12 + Math.random() * 8,
-            revealRadius: 0
-        });
+    // Create 50 floating text particles
+    for(let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'text-particle';
+        particle.textContent = ayurvedicTexts[Math.floor(Math.random() * ayurvedicTexts.length)];
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 20 + 's';
+        particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+        particle.style.fontSize = (12 + Math.random() * 6) + 'px';
+        container.appendChild(particle);
     }
     
-    let mouseX = 0, mouseY = 0;
-    
-    // Mouse tracking
-    canvas.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-    });
-    
-    // Render loop
-    function animate() {
-        ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        const time = Date.now() * 0.001;
-        
-        textParticles.forEach((particle, index) => {
-            // Gentle floating motion
-            particle.x += particle.vx;
-            particle.y += particle.vy;
-            
-            if(particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
-            if(particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
-            
-            // Mouse reveal effect
-            const dx = particle.x - mouseX;
-            const dy = particle.y - mouseY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if(distance < 200) {
-                particle.alpha = Math.max(particle.alpha, 0.8);
-                particle.revealRadius = Math.min(30, 30 - distance / 10);
-            } else {
-                particle.alpha = Math.max(0, particle.alpha * 0.98);
-                particle.revealRadius *= 0.95;
-            }
-            
-            // Glow effect
-            const gradient = ctx.createRadialGradient(
-                particle.x, particle.y, 0,
-                particle.x, particle.y, particle.revealRadius + 20
+    // Mouse reveal effect (Streamlit compatible)
+    document.addEventListener('mousemove', function(e) {
+        const particles = document.querySelectorAll('.text-particle');
+        particles.forEach(particle => {
+            const rect = particle.getBoundingClientRect();
+            const particleX = rect.left + rect.width / 2;
+            const particleY = rect.top + rect.height / 2;
+            const distance = Math.sqrt(
+                Math.pow(e.clientX - particleX, 2) + 
+                Math.pow(e.clientY - particleY, 2)
             );
-            gradient.addColorStop(0, `rgba(220, 38, 38, ${particle.alpha})`);
-            gradient.addColorStop(0.5, `rgba(255, 100, 100, ${particle.alpha * 0.5})`);
-            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
             
-            ctx.save();
-            ctx.globalAlpha = particle.alpha;
-            ctx.shadowColor = '#dc2626';
-            ctx.shadowBlur = 15;
-            ctx.fillStyle = gradient;
-            ctx.font = `bold ${particle.size}px 'Courier Prime', monospace`;
-            ctx.textAlign = 'center';
-            ctx.fillText(particle.text, particle.x, particle.y);
-            ctx.restore();
+            if(distance < 150) {
+                particle.classList.add('revealed');
+            } else {
+                particle.classList.remove('revealed');
+            }
         });
-        
-        requestAnimationFrame(animate);
-    }
-    
-    animate();
-})();
+    });
+});
 </script>
 """, unsafe_allow_html=True)
+
 
 # Load data
 @st.cache_data
