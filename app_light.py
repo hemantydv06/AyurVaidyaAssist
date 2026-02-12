@@ -4,55 +4,76 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# 🔥 RED THEME + GLOWING CSS ✨
+# 🔥 RED THEME + INTERACTIVE TEXT BACKGROUND ✨
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Courier+Prime:wght@400;700&display=swap');
     
-    /* RED GRADIENT BACKGROUND */
+    /* INTERACTIVE TEXT BACKGROUND - FULLSCREEN */
+    .stAppViewContainer {
+        position: relative !important;
+        background: #0a0a0a !important;
+        overflow: hidden !important;
+    }
+    
+    .text-bg-canvas {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        pointer-events: none !important;
+        z-index: 1 !important;
+        font-family: 'Courier Prime', monospace !important;
+    }
+    
+    /* RED GRADIENT OVERLAY - PRESERVES ORIGINAL DESIGN */
     .main {
-        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);
-        padding: 2rem;
-        font-family: 'Poppins', sans-serif;
+        position: relative !important;
+        z-index: 10 !important;
+        background: linear-gradient(135deg, rgba(220, 38, 38, 0.85) 0%, rgba(185, 28, 28, 0.9) 50%, rgba(153, 27, 27, 0.95) 100%) !important;
+        padding: 2rem !important;
+        font-family: 'Poppins', sans-serif !important;
+        backdrop-filter: blur(1px) !important;
     }
     
     /* GLOWING RED CARDS - FIXED WHITE TEXT */
     .glow-card {
         background: rgba(255, 255, 255, 0.95) !important;
-        backdrop-filter: blur(20px);
-        border-radius: 25px;
-        padding: 2rem;
-        margin: 1rem 0;
+        backdrop-filter: blur(20px) !important;
+        border-radius: 25px !important;
+        padding: 2rem !important;
+        margin: 1rem 0 !important;
         box-shadow: 
             0 20px 40px rgba(220, 38, 38, 0.3),
             0 0 0 1px rgba(255, 255, 255, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
+            inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        position: relative !important;
+        overflow: hidden !important;
     }
     
     .glow-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-        transition: left 0.7s;
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: -100% !important;
+        width: 100% !important;
+        height: 100% !important;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent) !important;
+        transition: left 0.7s !important;
     }
     
     .glow-card:hover::before {
-        left: 100%;
+        left: 100% !important;
     }
     
     .glow-card:hover {
-        transform: translateY(-8px);
+        transform: translateY(-8px) !important;
         box-shadow: 
             0 30px 60px rgba(220, 38, 38, 0.4),
-            0 0 0 1px rgba(255, 255, 255, 0.3);
+            0 0 0 1px rgba(255, 255, 255, 0.3) !important;
     }
     
     /* RED GLOWING BUTTONS */
@@ -97,23 +118,23 @@ st.markdown("""
     
     /* GLOWING TITLE */
     h1 {
-        background: linear-gradient(45deg, #ffffff, #fee2e2);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        background: linear-gradient(45deg, #ffffff, #fee2e2) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
         font-weight: 700 !important;
-        text-shadow: 0 0 30px rgba(255,255,255,0.5);
+        text-shadow: 0 0 30px rgba(255,255,255,0.5) !important;
     }
     
     /* FOOTER */
     .footer-glow {
         background: rgba(220, 38, 38, 0.9) !important;
-        backdrop-filter: blur(20px);
-        border-radius: 20px;
-        padding: 2rem;
-        text-align: center;
-        box-shadow: 0 20px 40px rgba(220, 38, 38, 0.4);
-        border: 1px solid rgba(255,255,255,0.2);
+        backdrop-filter: blur(20px) !important;
+        border-radius: 20px !important;
+        padding: 2rem !important;
+        text-align: center !important;
+        box-shadow: 0 20px 40px rgba(220, 38, 38, 0.4) !important;
+        border: 1px solid rgba(255,255,255,0.2) !important;
     }
     
     .footer-glow a {
@@ -124,9 +145,115 @@ st.markdown("""
     
     .footer-glow a:hover {
         color: white !important;
-        text-shadow: 0 0 10px rgba(254, 243, 199, 0.8);
+        text-shadow: 0 0 10px rgba(254, 243, 199, 0.8) !important;
     }
 </style>
+
+<!-- INTERACTIVE TEXT BACKGROUND CANVAS -->
+<div class="text-bg-canvas" id="textBgCanvas"></div>
+
+<script>
+// ✨ MAGIC INTERACTIVE TEXT BACKGROUND ✨
+(function() {
+    const canvas = document.getElementById('textBgCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas size
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    // Lorem ipsum text chunks for ayurvedic theme
+    const texts = [
+        "AYURVEDA • HEALING • HERBS • DOSHAS • VATA • PITTA • KAPHA",
+        "PRANA • CHI • ENERGY • BALANCE • HARBAL • NATURAL • REMEDIES",
+        "YOGA • MEDITATION • DETOX • CLEANSE • WELLNESS • HOLISTIC",
+        "TURMERIC • GINGER • ASHWAGANDHA • TRIPHALA • BRAHMI • SHATAVARI",
+        "SATVIK • FOOD • MIND • BODY • SPIRIT • ANCIENT • WISDOM"
+    ];
+    
+    // Generate random text positions
+    const textParticles = [];
+    const density = 0.3; // particles per 100px
+    
+    for(let i = 0; i < canvas.width * canvas.height * density / 10000; i++) {
+        textParticles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+            text: texts[Math.floor(Math.random() * texts.length)],
+            alpha: Math.random() * 0.3,
+            size: 12 + Math.random() * 8,
+            revealRadius: 0
+        });
+    }
+    
+    let mouseX = 0, mouseY = 0;
+    
+    // Mouse tracking
+    canvas.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+    
+    // Render loop
+    function animate() {
+        ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        const time = Date.now() * 0.001;
+        
+        textParticles.forEach((particle, index) => {
+            // Gentle floating motion
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+            
+            if(particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
+            if(particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
+            
+            // Mouse reveal effect
+            const dx = particle.x - mouseX;
+            const dy = particle.y - mouseY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if(distance < 200) {
+                particle.alpha = Math.max(particle.alpha, 0.8);
+                particle.revealRadius = Math.min(30, 30 - distance / 10);
+            } else {
+                particle.alpha = Math.max(0, particle.alpha * 0.98);
+                particle.revealRadius *= 0.95;
+            }
+            
+            // Glow effect
+            const gradient = ctx.createRadialGradient(
+                particle.x, particle.y, 0,
+                particle.x, particle.y, particle.revealRadius + 20
+            );
+            gradient.addColorStop(0, `rgba(220, 38, 38, ${particle.alpha})`);
+            gradient.addColorStop(0.5, `rgba(255, 100, 100, ${particle.alpha * 0.5})`);
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            
+            ctx.save();
+            ctx.globalAlpha = particle.alpha;
+            ctx.shadowColor = '#dc2626';
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = gradient;
+            ctx.font = `bold ${particle.size}px 'Courier Prime', monospace`;
+            ctx.textAlign = 'center';
+            ctx.fillText(particle.text, particle.x, particle.y);
+            ctx.restore();
+        });
+        
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+})();
+</script>
 """, unsafe_allow_html=True)
 
 # Load data
