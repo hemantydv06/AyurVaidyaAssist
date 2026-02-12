@@ -27,7 +27,7 @@ st.set_page_config(page_title="AyurVaidya Assist", layout="wide")
 st.title("🪔 AyurVaidya Assist")
 st.markdown("**AI-Powered Ayurvedic Disease Prediction & Remedy Guide**")
 
-# Ayurveda Info Section (Replaces useless sidebar)
+# Ayurveda Info Section
 col1, col2 = st.columns([2,1])
 with col1:
     st.markdown("""
@@ -52,7 +52,7 @@ with col2:
 
 st.markdown("---")
 
-# Safety checks (top of page)
+# Safety checks
 col1, col2 = st.columns(2)
 seen_doctor = col1.checkbox("✅ Already consulting doctor?", key="doctor")
 emergency = col2.checkbox("🚨 Emergency symptoms (chest pain, breathing issues)?", key="emergency")
@@ -64,17 +64,38 @@ if emergency:
     st.error("🚨 **IMMEDIATE MEDICAL EMERGENCY** - Call doctor NOW!")
     st.stop()
 
-# Smart Symptom Input (Autocomplete Textbox)
+# Session state for clear functionality
+if 'selected_symptoms' not in st.session_state:
+    st.session_state.selected_symptoms = []
+if 'user_input' not in st.session_state:
+    st.session_state.user_input = ""
+
+# Smart Symptom Input with CLEAR BUTTON
 st.header("📝 Describe Your Symptoms")
-st.info("💡 Type your symptoms. Matching suggestions appear below...")
+st.info("💡 Type symptoms or click suggestions. Use **CLEAR** to start over...")
 
-# Autocomplete symptom selector
-user_input = st.text_input(
-    "Enter symptoms (e.g., 'cough, sore throat, fever')",
-    placeholder="Start typing symptoms..."
-)
+col1, col2 = st.columns([3, 1])
+with col1:
+    user_input = st.text_input(
+        "Enter symptoms (e.g., 'cough, sore throat, fever')",
+        value=st.session_state.user_input,
+        placeholder="Start typing symptoms...",
+        key="symptom_input",
+        help="Type multiple symptoms separated by commas"
+    )
 
-selected_symptoms = []
+with col2:
+    if st.button("🗑️ **CLEAR ALL**", use_container_width=True, type="secondary"):
+        st.session_state.selected_symptoms = []
+        st.session_state.user_input = ""
+        st.rerun()
+
+# Show selected symptoms
+if st.session_state.selected_symptoms:
+    st.success(f"✅ **Selected ({len(st.session_state.selected_symptoms)})**: **{', '.join(st.session_state.selected_symptoms)}**")
+
+# Autocomplete suggestions
+selected_symptoms = st.session_state.selected_symptoms.copy()
 if user_input:
     # Filter matching symptoms
     matching_symptoms = symptoms_df[
@@ -82,38 +103,42 @@ if user_input:
     ]['symptom'].tolist()
     
     if matching_symptoms:
-        st.markdown("**🔍 Suggested symptoms:**")
+        st.markdown("**🔍 Click to add symptoms:**")
         symptom_cols = st.columns(4)
-        for i, symptom in enumerate(matching_symptoms[:16]):  # Top 16 matches
+        for i, symptom in enumerate(matching_symptoms[:12]):  # Top 12 matches
             with symptom_cols[i % 4]:
-                if st.button(symptom, key=f"suggest_{i}", use_container_width=True):
+                if st.button(symptom, key=f"suggest_{i}_{hash(symptom)}", use_container_width=True):
                     if symptom not in selected_symptoms:
                         selected_symptoms.append(symptom)
-                        st.success(f"✅ Added: {symptom}")
+                        st.session_state.selected_symptoms.append(symptom)
+                        st.rerun()
 
-# Manual additions
-st.markdown("**OR select from common symptoms:**")
+# Common symptoms buttons
+st.markdown("**🔥 Most Common Symptoms:**")
 common_symptoms = ['Cough', 'Fever', 'Fatigue', 'Headache', 'Joint pain', 
                   'Sore throat', 'Nausea', 'Chest congestion', 'Swelling']
 symptom_cols = st.columns(4)
 for i, sym in enumerate(common_symptoms):
     with symptom_cols[i % 4]:
-        if st.button(sym, key=f"common_{i}", use_container_width=True):
+        if st.button(sym, key=f"common_{i}_{hash(sym)}", use_container_width=True):
             if sym not in selected_symptoms:
                 selected_symptoms.append(sym)
+                st.session_state.selected_symptoms.append(sym)
+                st.rerun()
 
-# Parse input text also
+# Parse typed input
 if user_input:
     user_symptoms = [s.strip() for s in user_input.split(',') if s.strip()]
     for sym in user_symptoms:
         clean_sym = sym.strip().capitalize()
         if clean_sym and clean_sym not in selected_symptoms:
             selected_symptoms.append(clean_sym)
+            st.session_state.selected_symptoms.append(clean_sym)
 
-# Final selected list
-if selected_symptoms:
-    st.success(f"✅ **Analyzing {len(selected_symptoms)} symptoms**: **{', '.join(selected_symptoms)}**")
-else:
+st.session_state.selected_symptoms = selected_symptoms
+
+# Validate input
+if len(selected_symptoms) < 1:
     st.warning("⚠️ **Please select or type at least 2 symptoms**")
     st.stop()
 
@@ -178,7 +203,7 @@ for i, idx in enumerate(top_matches):
 # Footer
 st.markdown("---")
 st.markdown("""
-**✅ Ayurveda Advantages** | Natural • Root cause treatment • No side effects • Kitchen remedies
+**✅ Ayurveda Advantages** | Natural • Root cause treatment • No side effects • Kitchen remedies  
 **📊 Powered by** | AyurGenixAI Dataset (446 diseases) | **🤖 AI** | Advanced TF-IDF matching
 **⚠️ Disclaimer** | Not medical advice - consult your doctor for serious conditions
 """)
